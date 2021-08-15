@@ -1,5 +1,7 @@
 """
-Docstring
+Общий класс калькуляторов Calculator, отдельные калькуляторы для расчета
+калорий и денег, CaloriesCalculator и CashCalculator, класс Record для
+создания записей.
 """
 
 import datetime as dt
