@@ -118,10 +118,10 @@ class CashCalculator(Calculator):
         и конвертирует их в необходимую валюту.
         """
         sign, rate = self.currencies[currency]
-        rate = getattr(self, rate)
+        rates = getattr(self, rate)
         cash = self.get_today_stats()
         balance = self.limit - cash
-        converted = round((abs(balance) / rate), 2)
+        converted = round((abs(balance) / rates), 2)
         if cash < self.limit:
             return f'На сегодня осталось {converted} {sign}'
         elif cash == self.limit:
