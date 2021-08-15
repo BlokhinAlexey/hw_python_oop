@@ -106,17 +106,17 @@ class CashCalculator(Calculator):
     EURO_RATE = 70.0
     USD_RATE = 60.0
     RUB_RATE = 1.0
-    currencies = {
-        'usd': ('USD', 'USD_RATE'),
-        'eur': ('Euro', 'EURO_RATE'),
-        'rub': ('руб', 'RUB_RATE')
-    }
-
+    
     def get_today_cash_remained(self, currency):
         """
         Рассчитывает остаток или долг по деньгам за сегодня
         и конвертирует их в необходимую валюту.
         """
+        currencies = {
+        'usd': ('USD', 'USD_RATE'),
+        'eur': ('Euro', 'EURO_RATE'),
+        'rub': ('руб', 'RUB_RATE')
+        }
         sign, rate = self.currencies[currency]
         rates = getattr(self, rate)
         cash = self.get_today_stats()
