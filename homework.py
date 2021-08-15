@@ -103,9 +103,9 @@ class CashCalculator(Calculator):
     Хранит информацию о курсах валют и
     производит операции с записями о деньгах.
     """
-    EURO_RATE = 70
-    USD_RATE = 60
-    RUB_RATE = 1
+    EURO_RATE = 70.0
+    USD_RATE = 60.0
+    RUB_RATE = 1.0
     currencies = {
         'usd': ('USD', 'USD_RATE'),
         'eur': ('Euro', 'EURO_RATE'),
