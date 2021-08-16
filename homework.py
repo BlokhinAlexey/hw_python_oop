@@ -23,31 +23,34 @@ class Calculator:
         """
         self.records.append(record)
 
-    def get_today_stats(self) -> float:
+    def get_today_stats(self):
         """
         Возвращает количество денег/калорий в записях с
         сегодняшней датой.
         """
-        amount = 0
-        for records in self.records:
-            if records.date == records.TODAY.date():
-                amount += records.amount
-            else:
-                pass
-        return amount
+        today = dt.date.today()
+        today_amount = sum([records.amount for records in self.records
+                            if records.date == today])
+        return today_amount
 
-    def get_week_stats(self) -> float:
+    def get_week_stats(self):
         """
         Возвращает количество денег/калорий в записях за
         предыдущие семь дней.
         """
-        week_amount = 0
-        week_length = dt.datetime.now().date() - dt.timedelta(days=7)
-        for records in self.records:
-            if (records.date <= dt.datetime.now().date()
-                    and records.date >= week_length):
-                week_amount += records.amount
+        today = dt.date.today()
+        week_length = today - dt.timedelta(days=7)
+        week_amount = sum([records.amount for records in self.records
+                          if today >= records.date >= week_length])
         return week_amount
+
+    def get_balance(self, amount):
+        """
+        Возвращает разницу между лимитом и количеством
+        денег/калорий.
+        """
+        balance = self.limit - amount
+        return balance
 
 
 class Record:
@@ -55,9 +58,7 @@ class Record:
     Принимает данные записи, устанавливает значение даты по-умолчанию
     и переводит дату в необходимый формат.
     """
-
     DATE_FORMAT = '%d.%m.%Y'
-    TODAY = dt.datetime.now()
 
     def __init__(self, amount, comment, date=None):
         self.amount = amount
@@ -65,21 +66,20 @@ class Record:
         if date is not None:
             self.date = dt.datetime.strptime(date, self.DATE_FORMAT).date()
         else:
-            self.date = self.TODAY.date()
+            self.date = dt.date.today()
 
 
 class CaloriesCalculator(Calculator):
     """
     Производит операции с записями о еде.
     """
-
     def get_calories_remained(self):
         """
         Рассчитывает остаток по калориям  за сегодня.
         """
         calories = self.get_today_stats()
-        balance = self.limit - calories
-        if calories <= self.limit:
+        balance = self.get_balance(calories)
+        if balance > 0:
             return ('Сегодня можно съесть что-нибудь ещё, '
                     f'но с общей калорийностью не более {balance} кКал')
         else:
@@ -90,8 +90,8 @@ class CaloriesCalculator(Calculator):
         Рассчитывает остаток по калориям  за семь дней.
         """
         calories = self.get_week_stats()
-        balance = self.limit - calories
-        if calories <= self.limit:
+        balance = self.get_balance(calories)
+        if balance > 0:
             return ('Сегодня можно съесть что-нибудь ещё, '
                     f'но с общей калорийностью не более {balance} кКал')
         else:
@@ -113,18 +113,17 @@ class CashCalculator(Calculator):
         и конвертирует их в необходимую валюту.
         """
         currencies = {
-            'usd': ('USD', 'USD_RATE'),
-            'eur': ('Euro', 'EURO_RATE'),
-            'rub': ('руб', 'RUB_RATE')
+            'usd': ('USD', self.USD_RATE),
+            'eur': ('Euro', self.EURO_RATE),
+            'rub': ('руб', self.RUB_RATE)
         }
         sign, rate = currencies[currency]
-        rates = getattr(self, rate)
         cash = self.get_today_stats()
-        balance = self.limit - cash
-        converted = round((abs(balance) / rates), 2)
-        if cash < self.limit:
+        balance = self.get_balance(cash)
+        converted = round((abs(balance) / rate), 2)
+        if balance > 0:
             return f'На сегодня осталось {converted} {sign}'
-        elif cash == self.limit:
+        elif balance == 0:
             return 'Денег нет, держись'
         else:
             return f'Денег нет, держись: твой долг - {converted} {sign}'
@@ -135,13 +134,12 @@ class CashCalculator(Calculator):
         и конвертирует их в необходимую валюту.
         """
         sign, rate = self.currencies[currency]
-        rate = getattr(self, rate)
         cash = self.get_week_stats()
-        balance = self.limit - cash
+        balance = self.get_balance(cash)
         converted = round((abs(balance) / rate), 2)
-        if cash < self.limit:
+        if balance > 0:
             return f'На этой неделе осталось {converted} {sign}'
-        elif cash == self.limit:
+        elif balance == 0:
             return 'Денег нет, держись'
         else:
             return f'Денег нет, держись: твой долг - {converted} {sign}'
