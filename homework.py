@@ -82,8 +82,7 @@ class CaloriesCalculator(Calculator):
         if balance > 0:
             return ('Сегодня можно съесть что-нибудь ещё, '
                     f'но с общей калорийностью не более {balance} кКал')
-        else:
-            return 'Хватит есть!'
+        return 'Хватит есть!'
 
     def get_week_calories_remained(self):
         """
@@ -94,8 +93,7 @@ class CaloriesCalculator(Calculator):
         if balance > 0:
             return ('Сегодня можно съесть что-нибудь ещё, '
                     f'но с общей калорийностью не более {balance} кКал')
-        else:
-            return 'Хватит есть!'
+        return 'Хватит есть!'
 
 
 class CashCalculator(Calculator):
@@ -112,20 +110,20 @@ class CashCalculator(Calculator):
         Рассчитывает остаток или долг по деньгам за сегодня
         и конвертирует их в необходимую валюту.
         """
+        cash = self.get_today_stats()
+        balance = self.get_balance(cash)
+        if balance == 0:
+            return 'Денег нет, держись'
         currencies = {
             'usd': ('USD', self.USD_RATE),
             'eur': ('Euro', self.EURO_RATE),
             'rub': ('руб', self.RUB_RATE)
         }
         sign, rate = currencies[currency]
-        cash = self.get_today_stats()
-        balance = self.get_balance(cash)
         converted = round((abs(balance) / rate), 2)
         if balance > 0:
             return f'На сегодня осталось {converted} {sign}'
-        elif balance == 0:
-            return 'Денег нет, держись'
-        else:
+        if balance < 0:
             return f'Денег нет, держись: твой долг - {converted} {sign}'
 
     def get_week_cash_remained(self, currency):
@@ -133,13 +131,13 @@ class CashCalculator(Calculator):
         Рассчитывает остаток или долг по деньгам за семь дней
         и конвертирует их в необходимую валюту.
         """
-        sign, rate = self.currencies[currency]
         cash = self.get_week_stats()
         balance = self.get_balance(cash)
+        if balance == 0:
+            return 'Денег нет, держись'
+        sign, rate = self.currencies[currency]
         converted = round((abs(balance) / rate), 2)
         if balance > 0:
             return f'На этой неделе осталось {converted} {sign}'
-        elif balance == 0:
-            return 'Денег нет, держись'
-        else:
+        if balance < 0:
             return f'Денег нет, держись: твой долг - {converted} {sign}'
